@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Comment
+from .models import Post, Comment # , CustomTaggedPost
 
 # Register your models here.
 # admin.site.register(Post) # inital/default way of registering Models
@@ -21,3 +21,8 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'post', 'created', 'active']
     list_filter = ['active', 'created', 'updated']
     search_fields = ['name', 'email', 'body']
+    
+# @admin.register(CustomTaggedPost)
+# class CustomTaggedPostAdmin(admin.ModelAdmin):
+#     list_display = ('tag', 'content_object', 'object_id')
+#     search_fields = ('tag__name', 'content_object__title')

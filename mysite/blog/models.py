@@ -3,6 +3,9 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from taggit.managers import TaggableManager
+from taggit.models import GenericUUIDTaggedItemBase ,TaggedItemBase
 
 # Create your models here.
 
@@ -10,9 +13,20 @@ class PublishedManager(models.Manager):
     def get_queryset(self) -> models.QuerySet:
         return super().get_queryset().filter(status=Post.Status.PUBLISHED)
 
+class CustomTaggedPost(GenericUUIDTaggedItemBase, TaggedItemBase):
+    tag = models.ForeignKey(
+        'taggit.Tag',
+        related_name="uuid_post_item",
+        on_delete=models.CASCADE
+    )
+    object_id = models.UUIDField(db_index=True)
+    
+    class Meta:
+        verbose_name = _("Tag")
+        verbose_name_plural = _("Tags")
 
 class Post(models.Model): 
-    objects = models.Manager
+    objects = models.Manager()
     published = PublishedManager() # invoking our custom manager
     id = models.UUIDField(auto_created=True, default=uuid.uuid4, editable=False, primary_key=True)
     title = models.CharField(max_length=250) 
@@ -22,6 +36,8 @@ class Post(models.Model):
     publish = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    tags = TaggableManager(through=CustomTaggedPost)
+
     class Status(models.TextChoices): 
         DRAFT = 'DF', 'Draft'
         PUBLISHED = 'PB', 'Published'
